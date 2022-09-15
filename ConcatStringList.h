@@ -3,7 +3,7 @@
 
 #include "main.h"
 
-class CharArrayList {
+class charArrayList {
 private:
     int maxSize;
     int currentSize;
@@ -11,10 +11,13 @@ private:
     string * list;
 
 public:
-    CharArrayList(int size = 256){
+    charArrayList(int size = 256){
         maxSize = size;
         currentSize = currentElement = 0;
         list = new string[maxSize];
+    }
+    ~charArrayList(){
+        delete [] list;
     }
 };
 
