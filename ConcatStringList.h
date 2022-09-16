@@ -6,20 +6,52 @@
 class charArrayList {
 private:
     int maxSize;
-    int currentSize;
+    int size;
     int currentElement;
     string * list;
 
 public:
     charArrayList(int size = 256){
         maxSize = size;
-        currentSize = currentElement = 0;
+        size = currentElement = 0;
         list = new string[maxSize];
     }
     ~charArrayList(){
         delete [] list;
     }
+    void clear(){
+        delete [] list;
+        size = currentElement = 0;
+        list = new string[maxSize];
+    }
+    void toStart(){
+        currentElement = 0;
+    }
+    void toEnd(){ 
+        currentElement = size;
+    }
+    void next(){
+        if (currentElement < size) currentElement++;
+    }
+    void prev(){
+        if(currentElement != 0) currentElement--;
+    }
+    int length() const{
+        return size;
+    }
+    int currentPosition() const{
+        return currentElement;
+    }
+    void moveToPosition(int pos){
+        if ((pos >= 0) && (pos <= size)) {
+            cout << "Out of range";
+            return;
+        }
+        else currentElement = pos;
+    }
 };
+
+
 
 class ConcatStringList {
 public:
@@ -32,19 +64,14 @@ public:
 
     // TODO: may provide some attributes
 
-    int currentNode;
-    int maxSize;
-    int listSize;
-
-
 public:
 
     ConcatStringList(const char *){
         
     };
-    int length() const{
-        return listSize;
-    };
+    // int length() const{
+    //     return listSize;
+    // };
     int get(int index) const;
     int indexOf(char c) const;
     std::string toString() const;
