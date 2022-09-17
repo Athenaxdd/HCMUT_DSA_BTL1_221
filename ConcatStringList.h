@@ -51,7 +51,12 @@ public:
     }
 };
 
-
+class charALNode{
+public:
+    charArrayList node;
+    charALNode next;
+    
+};
 
 class ConcatStringList {
 public:
