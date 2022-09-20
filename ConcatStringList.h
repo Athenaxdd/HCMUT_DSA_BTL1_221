@@ -13,7 +13,7 @@ private:
     char * list;
 
 public:
-    charArrayList(int size = 256){
+    charArrayList(int initSize = 256){
         maxSize = size;
         size = current = 0;
         list = new char[maxSize];
@@ -52,8 +52,8 @@ public:
         for (int i = size; i > current; --i){
             list[i] = list[i-1];
         }
-            list[current] = s;
-            size++;
+        list[current] = s;
+        size++;
     }
     int currentPosition() const{
         return current;
@@ -79,7 +79,7 @@ public:
         for (int i = 0; i < size; ++i){
             nodeData.append(s[i]);
         }
-        this -> next = nullptr;
+        next = nullptr;
     }
 };
 
@@ -98,7 +98,18 @@ public:
     int listSize = 0;
 
 public:
+    ConcatStringList(){
+        head = nullptr;
+        tail = nullptr;
+    }
+    ConcatStringList(const ConcatStringList* other){
+        this -> head = other -> head;
+        this -> tail = other -> tail;
+        this -> listSize = other -> listSize;
+    }
     ConcatStringList(const char *s){
+        head = nullptr;
+        tail = nullptr;
         head = new charALNode(s);
         tail = head;
         listSize += head -> nodeData.length();
@@ -120,26 +131,41 @@ public:
     int indexOf(char c) const{
         charALNode * ptr = head;
         int position = 0;
-        while(!ptr){
-            if(ptr -> nodeData.getValue() == c) return position;
-            else {
-                position++;
-                ptr = ptr -> next;
+        ptr -> nodeData.toBegin();
+        while(ptr){
+            for (ptr -> nodeData.toBegin(); ptr -> nodeData.currentPosition() < ptr -> nodeData.length(); ptr -> nodeData.next()){
+                if(ptr -> nodeData.getValue() == c) return position;
+                else position++;
             }
+            ptr -> nodeData.toBegin();
+            ptr = ptr -> next;
         }
-        return -1;
+        return -1;  
     };
     std::string toString() const{
         string ans = "";
         charALNode * ptr = head;
-        while(!ptr){
-            ans += ptr -> nodeData.getValue();
+        while(ptr){
+            for (ptr -> nodeData.toBegin(); ptr -> nodeData.currentPosition() < ptr -> nodeData.length(); ptr -> nodeData.next()){
+                ans += ptr -> nodeData.getValue();
+            }
+            ptr -> nodeData.toBegin();
             ptr = ptr -> next;
         }
         return ans;
     };
-    // ConcatStringList concat(const ConcatStringList & otherS) const;
-    // ConcatStringList subString(int from, int to) const;
+    ConcatStringList concat(const ConcatStringList & otherS) const{
+        charALNode * ptrHead = otherS.head; 
+        charALNode * ptrTail = otherS.tail;
+        ConcatStringList(s);
+        s.head = head;
+        s.tail = ptrTail;
+        tail -> next = ptrHead;
+        return s;
+    };
+    ConcatStringList subString(int from, int to) const{
+        
+    };
     // ConcatStringList reverse() const;
     // ~ConcatStringList();
 

@@ -19,17 +19,17 @@ void tc1() {
     cout << "s1 toString: " << s1.toString() << endl;
 }
 
-// void tc2() {
-//     ConcatStringList s1("Hello,");
-//     ConcatStringList s2("_this_is");
-//     ConcatStringList s3("_an_assignment");
+void tc2() {
+    ConcatStringList s1("Hello,");
+    ConcatStringList s2("_this_is");
+    ConcatStringList s3("_an_assignment");
 
-//     // test concat
-//     ConcatStringList s4 = s1.concat(s2);
-//     cout << "s4: " << s4.toString() << endl;
+    // test concat
+    ConcatStringList s4 = s1.concat(s2);
+    cout << "s4: " << s4.toString() << endl;
 
-//     ConcatStringList s5 = s1.concat(s2).concat(s3);
-//     cout << "s5: " << s5.toString() << endl;
+    ConcatStringList s5 = s1.concat(s2).concat(s3);
+    cout << "s5: " << s5.toString() << endl;
 
 //     // test subString
 //     ConcatStringList s6 = s5.subString(5, 15);
@@ -38,7 +38,7 @@ void tc1() {
 //     // test reverse
 //     ConcatStringList s7 = s5.reverse();
 //     cout << "s7: " << s7.toString() << endl;
-// }
+}
 
 // void tc3() {
 //     ConcatStringList * s1 = new ConcatStringList("Hello");
@@ -66,5 +66,6 @@ void tc1() {
 
 int main() {
     tc1();
+    tc2();
     return 0;
 }
