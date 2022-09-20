@@ -31,9 +31,9 @@ void tc2() {
     ConcatStringList s5 = s1.concat(s2).concat(s3);
     cout << "s5: " << s5.toString() << endl;
 
-//     // test subString
-//     ConcatStringList s6 = s5.subString(5, 15);
-//     cout << "s6: " << s6.toString() << endl;
+    // test subString
+    ConcatStringList s6 = s5.subString(5, 15);
+    cout << "s6: " << s6.toString() << endl;
     
 //     // test reverse
 //     ConcatStringList s7 = s5.reverse();

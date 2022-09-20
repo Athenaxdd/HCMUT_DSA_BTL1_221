@@ -55,6 +55,12 @@ public:
         list[current] = s;
         size++;
     }
+    void remove(){
+        for (int i = current; i < size - 1; i++){
+            list[i] = list[i++];
+        }
+        size--;
+    }
     int currentPosition() const{
         return current;
     }
@@ -64,8 +70,14 @@ public:
         }
         else current = pos;
     }
-    char& getValue() {
+    char& getValue(){
         return list[current];
+    }
+    void reverse(char* str) {
+        int len = sizeof(str) / sizeof(str[0]);
+        for(size_t i=0; i<len/2; i++){
+            swap(str[i], str[len-i-1]);
+        }
     }
 };
 
@@ -80,6 +92,9 @@ public:
             nodeData.append(s[i]);
         }
         next = nullptr;
+    }
+    charALNode(const charALNode * other){
+        this -> nodeData = other -> nodeData;
     }
 };
 
@@ -121,23 +136,22 @@ public:
         if (index > listSize || index < 0) throw out_of_range("Index of string is invalid!");
         charALNode * ptr = head;
         int travel = 0;
-        while (travel + ptr -> nodeData.length() <= index){
+        while (travel + ptr -> nodeData.length() <= index){ // using travel in case the index position is larger than the length of a node
             travel += ptr -> nodeData.length();
             ptr = ptr ->next;
         }
-        ptr ->nodeData.moveToPosition(index - travel);
+        ptr ->nodeData.moveToPosition(index - travel); // index - travel = position 
         return ptr -> nodeData.getValue();
     };
     int indexOf(char c) const{
         charALNode * ptr = head;
-        int position = 0;
-        ptr -> nodeData.toBegin();
+        int position = 0; // counter for position
         while(ptr){
-            for (ptr -> nodeData.toBegin(); ptr -> nodeData.currentPosition() < ptr -> nodeData.length(); ptr -> nodeData.next()){
+            for (ptr -> nodeData.toBegin(); ptr -> nodeData.currentPosition() < ptr -> nodeData.length(); ptr -> nodeData.next()){ // move from head of charALnode to end
                 if(ptr -> nodeData.getValue() == c) return position;
                 else position++;
             }
-            ptr -> nodeData.toBegin();
+            ptr -> nodeData.toBegin(); // reset ptr position to charALnode head
             ptr = ptr -> next;
         }
         return -1;  
@@ -147,9 +161,9 @@ public:
         charALNode * ptr = head;
         while(ptr){
             for (ptr -> nodeData.toBegin(); ptr -> nodeData.currentPosition() < ptr -> nodeData.length(); ptr -> nodeData.next()){
-                ans += ptr -> nodeData.getValue();
+                ans += ptr -> nodeData.getValue(); // push each character into ans;
             }
-            ptr -> nodeData.toBegin();
+            ptr -> nodeData.toBegin(); // reset ptr position to charALnode head
             ptr = ptr -> next;
         }
         return ans;
@@ -158,15 +172,61 @@ public:
         charALNode * ptrHead = otherS.head; 
         charALNode * ptrTail = otherS.tail;
         ConcatStringList(s);
-        s.head = head;
-        s.tail = ptrTail;
-        tail -> next = ptrHead;
+        s.head = head; // head of the concat is head for the first string;
+        s.tail = ptrTail; // tail of the concat is tail of the end concatStringList string (need better wording)
+        tail -> next = ptrHead; // tail of the first concatStringList is connected to the head of ther concatStringList
         return s;
     };
     ConcatStringList subString(int from, int to) const{
-        
+        if (from >= to) throw logic_error("Invalid range");
+        if (from < 0 || to < 0 ) throw out_of_range("Index of string is invalid");
+        charALNode * ptr = head;
+        ConcatStringList * s = new ConcatStringList();
+        s -> listSize = to - from;
+        int travel = 0;
+        while (from >= (ptr -> nodeData.length() + travel)){ // if "from" index is larger than charALnode length, skip the charALnode 
+            travel += ptr -> nodeData.length();
+            ptr = ptr -> next;
+        }
+        s -> head = new charALNode(ptr); // node has index "from" is stored as head and tail of new node
+        s -> tail = s -> head;
+        s -> head -> nodeData.toBegin();
+        ptr = ptr -> next;
+        travel += ptr -> nodeData.length();
+        while (to >= (ptr -> nodeData.length() + travel)) { //travel from -> to, if travel throughout a node then add copy that node into a new charALnode, including the node has index "to"
+            charALNode * newNode = new charALNode(ptr);
+            s -> tail -> next = newNode;
+            s -> tail = s -> tail -> next;
+            travel += ptr -> nodeData.length();
+            ptr = ptr -> next;
+            delete newNode;
+        }
+        charALNode * newNode =  new charALNode(ptr);
+        s -> tail -> next =  newNode;
+        s -> tail = s -> tail -> next;
+        cout << travel << endl;
+        s -> tail -> nodeData.moveToPosition(to - travel);
+        for (int i = 0; i <= from; ++i){ // remove from head to index "from"
+            s -> head -> nodeData.remove();
+        }
+        for (int i = to; i < travel; ++i){ // remove from index "to" to end;
+            s -> tail -> nodeData.remove();
+        }
+        delete newNode;
+        return s;
     };
-    // ConcatStringList reverse() const;
+    ConcatStringList reverse() const{
+        charALNode * nodeCurrent, * nodeNext, * nodePrev, * ptr;
+        nodeCurrent = tail;
+        nodePrev = nullptr;
+        while (nodeCurrent){
+            ptr -> nodeData.reverse();
+            nodeNext = head -> next;
+            nodeCurrent -> next = nodePrev;
+            nodePrev = nodeCurrent;
+            nodeCurrent = nodeNext;
+        }
+    };
     // ~ConcatStringList();
 
 public:
