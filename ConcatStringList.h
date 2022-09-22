@@ -57,7 +57,7 @@ public:
     }
     void remove(){
         for (int i = current; i < size - 1; i++){
-            list[i] = list[i++];
+            list[i] = list[i+1]; //i=1: next to index "i" :smh:
         }
         size--;
     }
@@ -73,10 +73,10 @@ public:
     char& getValue(){
         return list[current];
     }
-    void reverse(char* str) {
-        int len = sizeof(str) / sizeof(str[0]);
-        for(size_t i=0; i<len/2; i++){
-            swap(str[i], str[len-i-1]);
+    void reverseChar(char* str) {
+        int length = sizeof(str) / sizeof(str[0]);
+        for(int i = 0; i < length / 2; ++i){
+            swap(str[i], str[length - i - 1]); 
         }
     }
 };
@@ -95,6 +95,7 @@ public:
     }
     charALNode(const charALNode * other){
         this -> nodeData = other -> nodeData;
+        this -> next = nullptr;
     }
 };
 
@@ -177,7 +178,7 @@ public:
         tail -> next = ptrHead; // tail of the first concatStringList is connected to the head of ther concatStringList
         return s;
     };
-    ConcatStringList subString(int from, int to) const{
+    ConcatStringList subString(int from, int to) const{ // idea is take the node contain both index "from" and "to" and all the node between then cut the 2 head and tail   
         if (from >= to) throw logic_error("Invalid range");
         if (from < 0 || to < 0 ) throw out_of_range("Index of string is invalid");
         charALNode * ptr = head;
@@ -188,39 +189,41 @@ public:
             travel += ptr -> nodeData.length();
             ptr = ptr -> next;
         }
+        int headToFormIndex = travel;
         s -> head = new charALNode(ptr); // node has index "from" is stored as head and tail of new node
         s -> tail = s -> head;
         s -> head -> nodeData.toBegin();
-        ptr = ptr -> next;
         travel += ptr -> nodeData.length();
+        ptr = ptr -> next;
         while (to >= (ptr -> nodeData.length() + travel)) { //travel from -> to, if travel throughout a node then add copy that node into a new charALnode, including the node has index "to"
             charALNode * newNode = new charALNode(ptr);
             s -> tail -> next = newNode;
             s -> tail = s -> tail -> next;
             travel += ptr -> nodeData.length();
             ptr = ptr -> next;
-            delete newNode;
         }
         charALNode * newNode =  new charALNode(ptr);
+        travel += ptr -> nodeData.length();
         s -> tail -> next =  newNode;
         s -> tail = s -> tail -> next;
-        cout << travel << endl;
-        s -> tail -> nodeData.moveToPosition(to - travel);
-        for (int i = 0; i <= from; ++i){ // remove from head to index "from"
-            s -> head -> nodeData.remove();
+        s -> tail -> nodeData.moveToPosition(travel - to);
+        while(s -> head -> nodeData.length() > headToFormIndex+1){
+            s -> head -> nodeData.remove();    
         }
+        cout << s -> head -> nodeData.getValue() << "//" << endl;
         for (int i = to; i < travel; ++i){ // remove from index "to" to end;
+            cout << this -> tail -> nodeData.getValue() << endl; 
             s -> tail -> nodeData.remove();
+            cout << this -> tail -> nodeData.getValue() << " after" << endl; // need optimization?
         }
-        delete newNode;
-        return s;
+        return * s;
     };
     ConcatStringList reverse() const{
         charALNode * nodeCurrent, * nodeNext, * nodePrev, * ptr;
         nodeCurrent = tail;
         nodePrev = nullptr;
         while (nodeCurrent){
-            ptr -> nodeData.reverse();
+            // ptr -> nodeData.reverseChar();
             nodeNext = head -> next;
             nodeCurrent -> next = nodePrev;
             nodePrev = nodeCurrent;
