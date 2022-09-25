@@ -73,10 +73,9 @@ public:
     char& getValue(){
         return list[current];
     }
-    void reverseChar(char* str) {
-        int length = sizeof(str) / sizeof(str[0]);
-        for(int i = 0; i < length / 2; ++i){
-            swap(str[i], str[length - i - 1]); 
+    void reverseChar() {
+        for(int i = 0; i < size / 2; ++i){
+            swap(list[i], list[size - i - 1]); 
         }
     }
 };
@@ -210,25 +209,48 @@ public:
         while(s -> head -> nodeData.length() > headToFormIndex+1){
             s -> head -> nodeData.remove();    
         }
-        cout << s -> head -> nodeData.getValue() << "//" << endl;
+        // cout << s -> head -> nodeData.getValue() << "//" << endl;
+        // cout << this -> tail -> nodeData.getValue() << endl; 
         for (int i = to; i < travel; ++i){ // remove from index "to" to end;
-            cout << this -> tail -> nodeData.getValue() << endl; 
+            // cout << this -> tail -> nodeData.getValue() << endl; 
             s -> tail -> nodeData.remove();
-            cout << this -> tail -> nodeData.getValue() << " after" << endl; // need optimization?
+            // cout << this -> tail -> nodeData.getValue() << " after" << endl; // need optimization smh
         }
         return * s;
     };
-    ConcatStringList reverse() const{
-        charALNode * nodeCurrent, * nodeNext, * nodePrev, * ptr;
-        nodeCurrent = tail;
-        nodePrev = nullptr;
-        while (nodeCurrent){
-            // ptr -> nodeData.reverseChar();
-            nodeNext = head -> next;
-            nodeCurrent -> next = nodePrev;
-            nodePrev = nodeCurrent;
-            nodeCurrent = nodeNext;
+    charALNode * reverseList(charALNode * head) const{
+        charALNode *current, *next, *prev;
+        prev = NULL; 
+        current = head;
+        while(current != NULL){
+                next = current -> next;
+                current -> next = prev;
+                prev = current;
+                current = next;
         }
+        head = prev;
+        return head;
+    };
+    ConcatStringList reverse() const{
+        ConcatStringList s = new ConcatStringList();
+        charALNode * ptr;
+        ptr = this -> head;
+        s.head = new charALNode(*ptr);
+        s.tail = s.head;
+        s.tail -> nodeData.reverseChar();
+        s.tail -> next = nullptr;
+        ptr = ptr -> next;
+        while (ptr)
+        {
+            charALNode *newNode = new charALNode(*ptr);
+            s.tail -> next = newNode;
+            s.tail = s.tail -> next;
+            s.tail -> nodeData.reverseChar();
+            s.tail -> next = nullptr;
+            ptr = ptr -> next;
+        }
+        s.head = reverseList(s.head);
+        return s;
     };
     // ~ConcatStringList();
 
