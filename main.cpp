@@ -1,5 +1,5 @@
 #include "ConcatStringList.h"
-
+//g++ -o main main.cpp ConcatStringList.cpp -I . -std=c++11
 void tc1() {
     ConcatStringList s1("Hello,_world");
     // test length
@@ -28,13 +28,13 @@ void tc2() {
     ConcatStringList s4 = s1.concat(s2);
     cout << "s4: " << s4.toString() << endl;
 
-    ConcatStringList s5 = s1.concat(s2).concat(s3);
+    ConcatStringList s5 = s4.concat(s3);
     cout << "s5: " << s5.toString() << endl;
 
     // // test subString
-    // ConcatStringList s6 = s5.subString(5, 15);
-    // cout << "s6: " << s6.toString() << endl;
-    
+    ConcatStringList s6 = s5.subString(5, 15);
+    cout << "s6: " << s6.toString() << endl;
+    cout << "s5: " << s5.toString() << endl;
 //     // test reverse
     ConcatStringList s7 = s5.reverse();
     cout << "s7: " << s7.toString() << endl;
@@ -65,7 +65,8 @@ void tc2() {
 // }
 
 int main() {
-    tc1();
-    tc2();
+    // tc1();
+    // tc2();
+    system("pause");
     return 0;
 }
