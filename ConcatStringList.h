@@ -134,6 +134,8 @@ public:
         this -> head = other -> head;
         this -> tail = other -> tail;
         this -> listSize = other -> listSize;
+        refList.increaseReferenceList(this -> head);
+        refList.increaseReferenceList(this -> tail);
     }
     ConcatStringList(const char *s){
         head = nullptr;
@@ -141,7 +143,15 @@ public:
         head = new charALNode(s);
         tail = head;
         listSize += head -> nodeData.length();
+        refList.increaseReferenceList(this -> head);
+        refList.increaseReferenceList(this -> tail);
     };
+    char * createNewChar (charALNode * node){
+        char * temp = new char[node -> nodeData.length()+1];
+        temp = node -> nodeData.getString();
+        temp[node -> nodeData.length()] = '\0';
+        return temp;
+    }
     int length() const{
         return listSize;
     };
@@ -182,17 +192,14 @@ public:
         return ans;
     };
     ConcatStringList concat(const ConcatStringList & otherS) const{
-        charALNode * ptrHead = otherS.head; 
-        charALNode * ptrTail = otherS.tail;
-        ConcatStringList (s);
+        ConcatStringList s;
         s.listSize = this -> listSize +  otherS.listSize; // tail of the first concatStringList is connected to the head of ther concatStringList
         s.head = this -> head; // head of the concat is head for the first string;
-        s.tail = ptrTail; // tail of the concat is tail of the end concatStringList string (need better wording)
-        tail -> next = ptrHead;
+        s.tail = otherS.tail; // tail of the concat is tail of the end concatStringList string (need better wording)
+        tail -> next = otherS.head;
         head -> nodeData.toBegin();
         refList.increaseReferenceList(s.head);
         refList.increaseReferenceList(s.tail);
-
         return s;
     };
     ConcatStringList subString(int from, int to) const{ // idea is take the node contain both index "from" and "to" and all the node between then cut the 2 head and tail   
@@ -275,36 +282,36 @@ public:
             s.tail -> next = nullptr;
             ptr = ptr -> next;
         }
+        charALNode * tempHead = s.head;
         s.head = reverseList(s.head);
+        s.tail = tempHead;
         refList.increaseReferenceList(s.head);
         refList.increaseReferenceList(s.tail);
         return s;
     };
-    // ~ConcatStringList(){
-    //     charALNode * ptr = head;
-    //     while (ptr){
-    //         charALNode * next = head -> next;
-    //         delete ptr;
-    //         ptr = next;
-    //     }
-    //     head = nullptr;
-    // };
+    ~ConcatStringList(){
+        refList.deleteRefNode(this -> head, this -> tail);
+        if (delStrList.deleteStringListCheck()){
+            while (head != tail -> next){
+                charALNode * temp = head;
+                head = head -> next;
+                delete temp;
+            }
+            head = nullptr;
+            tail = nullptr;
+        }
+        refList.checkEmpty();
+    };
 
 public:
-    class refNode{ // same idea as charArrayList and charALnode
+    class refNode{ // same idea as charALnode
         public:
             int referenceNum;
             charALNode * addRefNode;
-            refNode * nextRefNode;
-            charALNode * getAddRefNode(){
-                return addRefNode;
-            }
-            refNode * getNextRefNode(){
-                return nextRefNode;
-            }
-            refNode(){
+            refNode * nextRefNode;  
+            refNode(){  
                 this -> referenceNum = 0;
-                addRefNode = nullptr;
+                this -> addRefNode = nullptr;
                 this -> nextRefNode = nullptr;
             }
             refNode(charALNode * otherS){
@@ -316,20 +323,20 @@ public:
     class ReferencesList {
         // TODO: may provide some attributes
     int refListSize = 0;
-    refNode * refHead;
-    refNode * refTail;
-    refNode * refCurrent;
+    refNode * headReferenceNode;
+    refNode * tailReferenceNode;
+    refNode * currentReferenceNode;
         public:
             ReferencesList(){
                 this -> refListSize = 0;
-                this -> refHead = new refNode();
-                this -> refCurrent = refHead;
-                this -> refTail = refHead;
+                this -> headReferenceNode = nullptr;
+                this -> currentReferenceNode = nullptr;
+                this -> tailReferenceNode = nullptr;
             }
             int size() const{
                 return refListSize;
             };
-            void spilt(refNode * source, refNode ** front, refNode ** back){ // 2 pointers  
+            void spilt(refNode * source, refNode ** front, refNode ** back){ // 2 pointers | tortoise & hare 
                 refNode * slow = source;
                 refNode * fast = source -> nextRefNode;
                 while (fast != nullptr){
@@ -353,80 +360,126 @@ public:
                 } else{
                     result = list2;
                     result -> nextRefNode = merge(list1, list2 -> nextRefNode);
-                    return result;
                 }
+                return result;
             }
-            void sortReferenceList(refNode ** refHead){
-                refNode * head = * refHead;
+            void sortReferenceList(refNode ** headReferenceNode){
+                refNode * head = * headReferenceNode;
                 refNode * a, *b;
                 if (head == nullptr || head -> nextRefNode == nullptr) return;
                 spilt(head, &a, &b);
                 sortReferenceList(&a);
                 sortReferenceList(&b);
+                *headReferenceNode = merge(a, b);
+            }
+            void pushZeroes(){ // detach 0s and move to tail
+                if (currentReferenceNode == nullptr) return;
+                while (currentReferenceNode -> nextRefNode != nullptr) currentReferenceNode = currentReferenceNode -> nextRefNode;
+                if (currentReferenceNode -> referenceNum == 0) return;
+                while (1){
+                    if (headReferenceNode -> referenceNum != 0) return;
+                    refNode * temp = headReferenceNode;
+                    headReferenceNode = headReferenceNode -> nextRefNode;
+                    temp -> nextRefNode = nullptr;
+                    currentReferenceNode -> nextRefNode = temp;
+                    currentReferenceNode = currentReferenceNode -> nextRefNode;
+                    currentReferenceNode -> nextRefNode = nullptr;
+                } 
             }
             void increaseReferenceList(charALNode * otherS){
-                if (refListSize == 0){
+                if (refListSize == 0){ // create new list
                     refNode * temp = new refNode(otherS);
-                    refCurrent = refHead = temp;
-                    refHead -> nextRefNode = nullptr;
+                    currentReferenceNode = headReferenceNode = temp;
+                    headReferenceNode -> nextRefNode = nullptr;
+                    tailReferenceNode = headReferenceNode;
                     refListSize++;
                     return;
                 }
-                while (refCurrent -> getAddRefNode() != otherS){
-                    if (refCurrent -> nextRefNode == nullptr) break; 
-                    if (refCurrent -> addRefNode == otherS){
-                        refCurrent -> referenceNum++;
-                        sortReferenceList(&refHead);
-                        refCurrent = refHead;
+                while (1){
+                    if (currentReferenceNode -> addRefNode == otherS){
+                        currentReferenceNode -> referenceNum += 1;
+                        sortReferenceList(&headReferenceNode);
+                        currentReferenceNode = headReferenceNode;
                         return;
                     }
-                    refCurrent = refCurrent -> nextRefNode;
+                    if (currentReferenceNode -> nextRefNode == nullptr) break;  
+                    else currentReferenceNode = currentReferenceNode -> nextRefNode;
                 }
                 refNode * temp = new refNode(otherS);
-                refCurrent -> nextRefNode = temp;
-                refCurrent = refCurrent -> nextRefNode;
-                refCurrent -> nextRefNode = nullptr;
-                sortReferenceList(&refHead);
-                refCurrent = refHead;
-                refCurrent -> nextRefNode = temp;
+                currentReferenceNode -> nextRefNode = temp;
+                currentReferenceNode = currentReferenceNode -> nextRefNode;
+                currentReferenceNode -> nextRefNode = nullptr;
+                sortReferenceList(&headReferenceNode);
+                currentReferenceNode = headReferenceNode;
+                pushZeroes();
+                currentReferenceNode = headReferenceNode;
                 refListSize++;
             }
-//             void moveZeroes(refNode ** head){
-//                 if (*head == NULL) return;
-//                 refNode *temp = * head, *prev = *head;
-//                 while (temp != NULL) {
-//                 if (temp -> referenceNum == 0) {
-//                     // refNode * curr = temp;
-//                     temp = temp -> nextRefNode;
-//                     prev -> nextRefNode = temp;
-//                     curr -> nextRefNode = *head;
-//                     *head = curr;
-//                 }else {
-//                     prev = temp;
-//                     temp = temp -> nextRefNode;
-//                 }
-//     }
-// }
+            void removeHead(refNode * head){
+                refNode * tmp = headReferenceNode;
+            }
+            void addToTail(refNode * node){
+                refNode * tmp = tailReferenceNode;
+                tmp -> nextRefNode = node;
+                node -> nextRefNode = nullptr;
+                tailReferenceNode = node;
+            }
             void deleteRefNode(charALNode * head, charALNode * tail){
                 refNode * deleteRefHead;
                 refNode * deleteRefTail;
-                refCurrent = refHead;
-                while (refCurrent){
-                    if (head == refCurrent -> addRefNode){
-                        deleteRefHead = refCurrent;
-                        refCurrent -> referenceNum--;
+                currentReferenceNode = headReferenceNode;
+                while (currentReferenceNode){
+                    if (head == currentReferenceNode -> addRefNode){
+                        deleteRefHead = currentReferenceNode;
+                        currentReferenceNode -> referenceNum--;
                     }
-                    if (tail == refCurrent -> addRefNode){
-                        deleteRefTail = refCurrent;
-                        refCurrent -> referenceNum--;
+                    if (tail == currentReferenceNode -> addRefNode){
+                        deleteRefTail = currentReferenceNode;
+                        currentReferenceNode -> referenceNum--;
                     }
-                    refCurrent = refCurrent -> nextRefNode;
+                    currentReferenceNode = currentReferenceNode -> nextRefNode;
+                    
                 }
-                // delStrList wip 
+                delStrList.increaseDeleteList(deleteRefHead, deleteRefTail);
+                sortReferenceList(&headReferenceNode);
+                currentReferenceNode = headReferenceNode;
+                // cout << headReferenceNode << endl;
+                pushZeroes();
+                currentReferenceNode = headReferenceNode;
+            }
+            // void clearRefList(int size){
+            //     if (size == 0){
+            //         currentReferenceNode = headReferenceNode;
+            //         while (currentReferenceNode){
+            //             refNode * temp = currentReferenceNode -> nextRefNode;
+            //             delete currentReferenceNode;
+            //             currentReferenceNode = temp;
+            //             refListSize--;
+            //         }
+            //         headReferenceNode = nullptr;
+            //     }
+            //     return;
+            // }
+            void checkEmpty(){
+                currentReferenceNode = headReferenceNode;
+                while (currentReferenceNode){
+                    if (currentReferenceNode -> referenceNum != 0) return;
+                    currentReferenceNode = currentReferenceNode -> nextRefNode;
+                }
+                currentReferenceNode = headReferenceNode;
+                while(currentReferenceNode) {
+                    refNode* tempDelete = currentReferenceNode;
+                    currentReferenceNode = currentReferenceNode -> nextRefNode;
+                    tempDelete -> nextRefNode = nullptr;
+                    delete tempDelete;
+                    refListSize--;
+                }          
+                headReferenceNode = nullptr;
+                currentReferenceNode = nullptr;
             }
             int refCountAt(int index) const{
                 if (index < 0 || index >= refListSize) throw out_of_range("Index of references list is invalid!");
-                refNode * temp = refHead;
+                refNode * temp = headReferenceNode;
                 for (int i = index; index > 0; --i){
                     temp = temp -> nextRefNode;
                 }
@@ -434,7 +487,7 @@ public:
             };
             std::string refCountsString() const{
                 string result = "";
-                refNode * temp = refHead;
+                refNode * temp = headReferenceNode;
                 result.append("RefCounts[");
                 while (temp){
                     result.append(to_string(temp -> referenceNum));
@@ -484,7 +537,47 @@ public:
                 tailDeleteNode -> nextDeleteStringNode = nullptr;
                 deleteStringListSize++;
             }
+            bool deleteStringListCheck(){
+                deleteStringNode * current = headDeleteNode;
+                deleteStringNode * prev = current;
+                bool flag = false;
+                while (current){
+                    if (current -> headDeleteStringNode -> referenceNum == 0 && current -> tailDeleteStringNode -> referenceNum == 0){
+                        deleteStringListSize--;
+                        flag = true;
+                        if (deleteStringListSize == 0){
+                            headDeleteNode = tailDeleteNode = nullptr;
+                            return true;
+                        }
+                        if (current == headDeleteNode){
+                            deleteStringNode * temp = headDeleteNode;
+                            prev = current = headDeleteNode -> nextDeleteStringNode;
+                            headDeleteNode = headDeleteNode -> nextDeleteStringNode;
+                            temp -> nextDeleteStringNode = nullptr;
+                            delete temp;
+                            continue;
+                        }
+                        if (current == tailDeleteNode){
+                            tailDeleteNode = prev;
+                            tailDeleteNode -> nextDeleteStringNode = nullptr;
+                            current -> nextDeleteStringNode = nullptr;
+                            delete current;
+                            return true;
+                        }
+                        deleteStringNode * temp = current;
+                        prev -> nextDeleteStringNode = temp -> nextDeleteStringNode;
+                        temp -> nextDeleteStringNode = nullptr;
+                        current = prev -> nextDeleteStringNode;
+                        delete temp;
+                        continue;
+                    }
+                    prev = current;
+                    current = current -> nextDeleteStringNode;
+                }
+                return flag;
+            }
             std::string totalRefCountsString() const{
+                if (headDeleteNode == nullptr) return "TotalRefCounts[]";
                 string result = "";
                 deleteStringNode * temp = headDeleteNode;
                 result.append("TotalRefCounts[");

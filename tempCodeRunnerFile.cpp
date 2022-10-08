@@ -1,0 +1,1 @@
+g++ -o main main.cpp ConcatStringList.cpp -I . -std=c++11
