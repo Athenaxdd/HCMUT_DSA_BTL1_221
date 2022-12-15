@@ -392,20 +392,27 @@ public:
                 sortReferenceList(&b);
                 *headReferenceNode = merge(a, b);
             }
-            void pushZeroes(){ // detach 0s and move to tail
-                if (currentReferenceNode == nullptr) return;
-                while (currentReferenceNode -> nextRefNode != nullptr) currentReferenceNode = currentReferenceNode -> nextRefNode;
-                if (currentReferenceNode -> referenceNum == 0) return;
-                while (1){
-                    if (headReferenceNode -> referenceNum != 0) return;
-                    refNode * temp = headReferenceNode;
-                    headReferenceNode = headReferenceNode -> nextRefNode;
-                    temp -> nextRefNode = nullptr;
-                    currentReferenceNode -> nextRefNode = temp;
-                    currentReferenceNode = currentReferenceNode -> nextRefNode;
-                    currentReferenceNode -> nextRefNode = nullptr;
-                } 
-            }
+            // void pushZeroes(){
+            //     if (currentReferenceNode == nullptr) return;
+            //     refNode * tempHead = headReferenceNode;
+            //     while (tempHead -> nextRefNode -> referenceNum != 0){
+            //         refNode * temp = tempHead;
+            //         tailReferenceNode -> nextRefNode = temp;
+            //         temp -> nextRefNode = nullptr;
+            //         tailReferenceNode = temp;
+            //         headReferenceNode = temp -> nextRefNode; //?? memo leak?
+            //         tempHead = tempHead -> nextRefNode;
+            //     }
+            //     if (tempHead -> referenceNum == 0){
+            //         refNode * temp = tempHead;
+            //         tailReferenceNode -> nextRefNode = temp;
+            //         temp -> nextRefNode = nullptr;
+            //         tailReferenceNode = temp;
+            //     }
+            // }
+            void pushZeroes(){
+
+            };
             void increaseReferenceList(charALNode * otherS){
                 if (refListSize == 0){ // create new list
                     refNode * temp = new refNode(otherS);
@@ -434,9 +441,6 @@ public:
                 pushZeroes();
                 currentReferenceNode = headReferenceNode;
                 refListSize++;
-            }
-            void removeHead(refNode * head){
-                refNode * tmp = headReferenceNode;
             }
             void addToTail(refNode * node){
                 refNode * tmp = tailReferenceNode;

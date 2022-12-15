@@ -76,7 +76,7 @@ void DataLog::save()
      */
     currentState++;
     cout << *currentState << endl;
-    if (currentState != logList.end())
+    while (currentState != logList.end())
     {
         printLog();
         cout << endl;
